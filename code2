@@ -1,0 +1,170 @@
+from abc import ABC, abstractmethod
+
+# Classe abstrata Pessoa (Base)
+class Pessoa(ABC):
+    def __init__(self, nome, idade, numero_matricula):
+        self.__nome = nome
+        self.__idade = idade
+        self.__numero_matricula = numero_matricula
+
+    @abstractmethod
+    def mostrar_informacoes(self):
+        pass
+
+    # Getters e Setters
+    def get_nome(self):
+        return self.__nome
+
+    def get_idade(self):
+        return self.__idade
+
+    def get_numero_matricula(self):
+        return self.__numero_matricula
+
+
+# Subclasse UsuarioComum (Herança de Pessoa)
+class UsuarioComum(Pessoa):
+    def __init__(self, nome, idade, numero_matricula):
+        super().__init__(nome, idade, numero_matricula)
+        self.__livros_emprestados = []
+
+    def mostrar_informacoes(self):
+        return f"Usuário: {self.get_nome()}, Matrícula: {self.get_numero_matricula()}, Livros emprestados: {len(self.__livros_emprestados)}"
+
+    # Método para emprestar livro
+    def emprestar_livro(self, livro):
+        if len(self.__livros_emprestados) < 3 and livro.get_disponivel():
+            self.__livros_emprestados.append(livro)
+            livro.set_disponivel(False)  # Livro fica indisponível
+            return True
+        return False
+
+    # Método para devolver livro
+    def devolver_livro(self, livro):
+        if livro in self.__livros_emprestados:
+            self.__livros_emprestados.remove(livro)
+            livro.set_disponivel(True)  # Livro fica disponível novamente
+            return True
+        return False
+
+    def get_livros_emprestados(self):
+        return self.__livros_emprestados
+
+
+# Subclasse Administrador (Herança de Pessoa)
+class Administrador(Pessoa):
+    def __init__(self, nome, idade, numero_matricula):
+        super().__init__(nome, idade, numero_matricula)
+
+    def mostrar_informacoes(self):
+        return f"Administrador: {self.get_nome()}, Matrícula: {self.get_numero_matricula()}"
+
+    # Método para cadastrar livros
+    def cadastrar_livro(self, biblioteca, livro):
+        biblioteca.adicionar_livro(livro)
+
+
+# Classe abstrata ItemBiblioteca (Base)
+class ItemBiblioteca(ABC):
+    def __init__(self, titulo, autor, ano_publicacao):
+        self.__titulo = titulo
+        self.__autor = autor
+        self.__ano_publicacao = ano_publicacao
+        self.__disponivel = True
+
+    @abstractmethod
+    def mostrar_informacoes(self):
+        pass
+
+    # Getters e Setters
+    def get_titulo(self):
+        return self.__titulo
+
+    def get_autor(self):
+        return self.__autor
+
+    def get_ano_publicacao(self):
+        return self.__ano_publicacao
+
+    def get_disponivel(self):
+        return self.__disponivel
+
+    def set_disponivel(self, status):
+        self.__disponivel = status
+
+
+# Subclasse Livro (Herança de ItemBiblioteca)
+class Livro(ItemBiblioteca):
+    def __init__(self, titulo, autor, ano_publicacao, genero):
+        super().__init__(titulo, autor, ano_publicacao)
+        self.__genero = genero
+
+    def mostrar_informacoes(self):
+        return f"Livro: {self.get_titulo()}, Autor: {self.get_autor()}, Ano: {self.get_ano_publicacao()}, Gênero: {self.__genero}"
+
+
+# Classe Biblioteca
+class Biblioteca:
+    def __init__(self):
+        self.__livros = []
+        self.__usuarios = []
+
+    def adicionar_livro(self, livro):
+        self.__livros.append(livro)
+
+    def adicionar_usuario(self, usuario):
+        self.__usuarios.append(usuario)
+
+    # Relatório de livros disponíveis
+    def livros_disponiveis(self):
+        return [livro.mostrar_informacoes() for livro in self.__livros if livro.get_disponivel()]
+
+    # Relatório de usuários com livros emprestados
+    def usuarios_com_livros_emprestados(self):
+        return [usuario.mostrar_informacoes() for usuario in self.__usuarios if len(usuario.get_livros_emprestados()) > 0]
+
+
+# Exemplo de uso do sistema
+if __name__ == "__main__":
+    # Criando a biblioteca
+    biblioteca = Biblioteca()
+
+    # Criando usuários
+    usuario1 = UsuarioComum("Carlos", 25, 12345)
+    usuario2 = UsuarioComum("Ana", 22, 67890)
+
+    # Criando administrador
+    admin = Administrador("José", 35, 11111)
+
+    # Criando livros
+    livro1 = Livro("A Arte da Guerra", "Sun Tzu", 500, "Estratégia")
+    livro2 = Livro("1984", "George Orwell", 1949, "Ficção")
+    livro3 = Livro("Dom Casmurro", "Machado de Assis", 1899, "Literatura Brasileira")
+    livro4 = Livro("A Moreninha", "Joaquim Manuel de Macedo", 1844, "Romance")
+
+    # Adicionando livros e usuários na biblioteca
+    biblioteca.adicionar_usuario(usuario1)
+    biblioteca.adicionar_usuario(usuario2)
+    admin.cadastrar_livro(biblioteca, livro1)
+    admin.cadastrar_livro(biblioteca, livro2)
+    admin.cadastrar_livro(biblioteca, livro3)
+    admin.cadastrar_livro(biblioteca, livro4)
+
+    # Empréstimos
+    usuario1.emprestar_livro(livro1)
+    usuario1.emprestar_livro(livro2)
+    usuario2.emprestar_livro(livro3)
+
+    # Relatórios
+    print("Livros disponíveis:")
+    for livro in biblioteca.livros_disponiveis():
+        print(livro)
+
+    print("\nUsuários com livros emprestados:")
+    for usuario in biblioteca.usuarios_com_livros_emprestados():
+        print(usuario)
+
+    # Devolução de livro
+    usuario1.devolver_livro(livro1)
+    print("\nApós devolução:")
+    print(f"Livros disponíveis após devolução: {biblioteca.livros_disponiveis()}")
