@@ -1,0 +1,25 @@
+# Classe abstrata Pessoa
+from abc import ABC, abstractmethod
+
+class Pessoa(ABC):
+    def __init__(self, nome, idade, numero_matricula):
+        self.__nome = nome
+        self.__idade = idade
+        self.__numero_matricula = numero_matricula
+    
+    @abstractmethod
+    def mostrar_informacoes(self):
+        pass
+    
+    # Getters e Setters
+    def get_nome(self):
+        return self.__nome
+
+# Classe UsuarioComum
+class UsuarioComum(Pessoa):
+    def __init__(self, nome, idade, numero_matricula):
+        super().__init__(nome, idade, numero_matricula)
+        self.__livros_emprestados = []
+    
+    def mostrar_informacoes(self):
+        return f"Usuário: {self.get_nome()}, Livros emprestados: {len(self.__livros_emprestados)}"
